@@ -1,0 +1,17 @@
+{
+  "accountAssociation": {
+    "header": "placeholder",
+    "payload": "placeholder",
+    "signature": "placeholder"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Bet Buddies",
+    "iconUrl": "https://placehold.co/200x200/050508/00ff87?text=BB&font=montserrat",
+    "homeUrl": "https://bet-buddies-black.vercel.app/bet-buddies.html",
+    "imageUrl": "https://placehold.co/600x400/050508/00ff87?text=Bet+Buddies&font=montserrat",
+    "buttonTitle": "🎲 Bahse Gir",
+    "splashImageUrl": "https://placehold.co/200x200/050508/00ff87?text=BB&font=montserrat",
+    "splashBackgroundColor": "#050508"
+  }
+}
