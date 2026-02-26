@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bet Buddies — On-Chain</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
 <style>
   :root {
     --bg: #050508;
@@ -663,14 +664,6 @@
 
   .hidden { display: none !important; }
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
-<script>
-  window.addEventListener('load', function() {
-    if (window.sdk && window.sdk.actions) {
-      window.sdk.actions.ready();
-    }
-  });
-</script>
 </head>
 <body>
 
@@ -820,31 +813,67 @@ const leaderboardData = [
   { name: 'basegirl.eth', avatar: 'B', color: '#ffe600,#ff006e', points: 540, wins: 8, total: 13 },
 ];
 
-// --- Farcaster connect ---
+// --- Farcaster SDK Auto Login ---
+async function initFarcasterSDK() {
+  try {
+    if (window.sdk) {
+      await window.sdk.actions.ready();
+      const context = await window.sdk.context;
+      if (context && context.user) {
+        const fc = context.user;
+        const username = fc.username || fc.displayName || 'anon';
+        const displayName = fc.displayName || username;
+        currentUser = {
+          name: displayName,
+          handle: username,
+          avatar: displayName[0].toUpperCase(),
+          color: '#00ff87,#00c2ff',
+          fid: fc.fid || '?',
+          pfp: fc.pfpUrl || null,
+          points: 0, wins: 0, total: 0
+        };
+        showApp(fc.pfpUrl || null);
+        showToast(`🟣 Hoş geldin, @${username}!`);
+        return;
+      }
+    }
+  } catch (e) {
+    console.log('SDK fallback:', e);
+  }
+  // Fallback: show manual connect button
+  document.getElementById('connect-screen').classList.remove('hidden');
+}
+
 function connectFarcaster() {
   const user = farcasterUsers[Math.floor(Math.random() * farcasterUsers.length)];
   currentUser = { ...user };
-  
+  showApp(null);
+  showToast('🟣 Farcaster ile bağlandın!');
+}
+
+function showApp(pfpUrl) {
   document.getElementById('connect-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  
-  document.getElementById('header-avatar').textContent = user.avatar;
-  document.getElementById('header-avatar').style.background = `linear-gradient(135deg, ${user.color})`;
-  document.getElementById('header-name').textContent = '@' + user.handle;
-  
-  // Add user to leaderboard
+  const avatar = document.getElementById('header-avatar');
+  if (pfpUrl) {
+    avatar.style.backgroundImage = `url(${pfpUrl})`;
+    avatar.style.backgroundSize = 'cover';
+    avatar.style.backgroundPosition = 'center';
+    avatar.textContent = '';
+  } else {
+    avatar.textContent = currentUser.avatar;
+    avatar.style.background = `linear-gradient(135deg, ${currentUser.color})`;
+  }
+  document.getElementById('header-name').textContent = '@' + currentUser.handle;
   leaderboardData.push({
-    name: user.handle, avatar: user.avatar, color: user.color,
-    points: 0, wins: 0, total: 0
+    name: currentUser.handle, avatar: currentUser.avatar,
+    color: currentUser.color, points: 0, wins: 0, total: 0
   });
   leaderboardData.sort((a,b) => b.points - a.points);
-  
   bets = [...sampleBets];
   updateStats();
   renderBets();
   renderLeaderboard();
-  
-  showToast('🟣 Farcaster ile bağlandın!');
 }
 
 function updateStats() {
@@ -1042,8 +1071,10 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Init default tab
+// Init
 document.getElementById('bets-tab').style.display = 'block';
+document.getElementById('connect-screen').classList.add('hidden');
+window.addEventListener('load', initFarcasterSDK);
 </script>
 </body>
 </html>
