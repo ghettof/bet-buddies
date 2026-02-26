@@ -663,6 +663,14 @@
 
   .hidden { display: none !important; }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    if (window.sdk && window.sdk.actions) {
+      window.sdk.actions.ready();
+    }
+  });
+</script>
 </head>
 <body>
 
