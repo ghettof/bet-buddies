@@ -663,6 +663,42 @@
   .nav-btn .icon { font-size: 20px; }
 
   .hidden { display: none !important; }
+
+  /* Wallet button */
+  .wallet-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,255,135,0.05));
+    border: 1px solid rgba(0,194,255,0.3);
+    border-radius: 100px;
+    padding: 6px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-blue);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .wallet-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,194,255,0.2); }
+  .wallet-btn.connected { 
+    color: var(--neon-green); 
+    border-color: rgba(0,255,135,0.3);
+    background: linear-gradient(135deg, rgba(0,255,135,0.1), rgba(0,194,255,0.05));
+  }
+  .wallet-address {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-green);
+    margin-top: 12px;
+    word-break: break-all;
+    display: none;
+  }
+
 </style>
 </head>
 <body>
@@ -684,11 +720,28 @@
         Bet Buddies
         <span>ON-CHAIN SOCIAL</span>
       </div>
-      <div class="user-pill" id="user-pill">
-        <div class="avatar" id="header-avatar">?</div>
-        <span class="user-name" id="header-name">...</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="user-pill" id="user-pill" onclick="toggleWalletPanel()">
+          <div class="avatar" id="header-avatar">?</div>
+          <span class="user-name" id="header-name">...</span>
+        </div>
+        <button class="wallet-btn" id="wallet-btn" onclick="connectWallet()">
+          💎 Cüzdan Bağla
+        </button>
       </div>
     </header>
+
+    <!-- Wallet Panel -->
+    <div id="wallet-panel" style="display:none;margin-bottom:16px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;">
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;">Cüzdan</div>
+        <div id="wallet-address" class="wallet-address"></div>
+        <div id="wallet-status" style="font-size:13px;color:var(--muted);margin-top:8px;">Cüzdan bağlı değil</div>
+        <button class="wallet-btn" id="wallet-panel-btn" onclick="connectWallet()" style="margin-top:12px;width:100%;justify-content:center;">
+          💎 Coinbase Wallet ile Bağlan
+        </button>
+      </div>
+    </div>
 
     <!-- Stats -->
     <div class="stats-bar">
@@ -812,6 +865,77 @@ const leaderboardData = [
   { name: 'degen.base', avatar: 'D', color: '#ff006e,#00c2ff', points: 620, wins: 9, total: 14 },
   { name: 'basegirl.eth', avatar: 'B', color: '#ffe600,#ff006e', points: 540, wins: 8, total: 13 },
 ];
+
+
+// --- Coinbase Wallet ---
+let walletAddress = null;
+
+function toggleWalletPanel() {
+  const panel = document.getElementById('wallet-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function connectWallet() {
+  // Try Farcaster SDK wallet first (Base app / Warpcast)
+  try {
+    if (window.sdk && window.sdk.wallet) {
+      const result = await window.sdk.wallet.ethProvider.request({
+        method: 'eth_requestAccounts'
+      });
+      if (result && result[0]) {
+        setWalletConnected(result[0]);
+        return;
+      }
+    }
+  } catch(e) {
+    console.log('SDK wallet failed, trying window.ethereum:', e);
+  }
+
+  // Try window.ethereum (Coinbase Wallet browser extension / mobile)
+  try {
+    if (window.ethereum) {
+      const isCoinbase = window.ethereum.isCoinbaseWallet || 
+                         (window.ethereum.providers && window.ethereum.providers.find(p => p.isCoinbaseWallet));
+      
+      const provider = isCoinbase ? window.ethereum : 
+        (window.ethereum.providers ? window.ethereum.providers.find(p => p.isCoinbaseWallet) || window.ethereum : window.ethereum);
+      
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts[0]) {
+        setWalletConnected(accounts[0]);
+        return;
+      }
+    }
+  } catch(e) {
+    console.log('window.ethereum failed:', e);
+  }
+
+  // No wallet found
+  showToast('❗ Coinbase Wallet bulunamadı. Yükleyin!');
+  setTimeout(() => {
+    window.open('https://www.coinbase.com/wallet/downloads', '_blank');
+  }, 1500);
+}
+
+function setWalletConnected(address) {
+  walletAddress = address;
+  const short = address.slice(0,6) + '...' + address.slice(-4);
+  
+  // Update wallet button
+  const btn = document.getElementById('wallet-btn');
+  btn.textContent = '✅ ' + short;
+  btn.classList.add('connected');
+  
+  // Update panel
+  const addrDiv = document.getElementById('wallet-address');
+  addrDiv.textContent = address;
+  addrDiv.style.display = 'block';
+  document.getElementById('wallet-status').textContent = '✅ Cüzdan bağlandı';
+  document.getElementById('wallet-panel-btn').textContent = '✅ ' + short;
+  document.getElementById('wallet-panel-btn').classList.add('connected');
+  
+  showToast('💎 Cüzdan bağlandı: ' + short);
+}
 
 // --- Farcaster SDK Auto Login ---
 async function initFarcasterSDK() {
