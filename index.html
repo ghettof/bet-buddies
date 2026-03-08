@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bet Buddies — On-Chain</title>
+<meta property="fc:frame" content="vNext">
+<meta property="fc:frame:image" content="https://placehold.co/600x400/050508/00ff87?text=Bet+Buddies&font=montserrat">
+<meta property="fc:frame:button:1" content="🎲 Bahse Gir">
+<meta property="fc:frame:post_url" content="https://bet-buddies-black.vercel.app">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
 <style>
   :root {
@@ -20,685 +25,119 @@
     --muted: #555570;
     --radius: 12px;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Animated background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 30% 20%, rgba(0,194,255,0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(0,255,135,0.05) 0%, transparent 50%);
-    z-index: 0;
-    pointer-events: none;
-    animation: drift 20s ease-in-out infinite alternate;
-  }
-
-  @keyframes drift {
-    from { transform: translate(0,0); }
-    to { transform: translate(30px, 20px); }
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 0 16px 100px;
-  }
-
-  /* Header */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .logo span {
-    background: none;
-    -webkit-text-fill-color: var(--muted);
-    font-size: 12px;
-    font-family: 'Space Mono', monospace;
-    display: block;
-    letter-spacing: 3px;
-    margin-top: -4px;
-  }
-
-  .user-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 12px 6px 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: 0; pointer-events: none; }
+  body::after { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 30% 20%, rgba(0,194,255,0.05) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(0,255,135,0.05) 0%, transparent 50%); z-index: 0; pointer-events: none; animation: drift 20s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(30px, 20px); } }
+  .container { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 16px 100px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .logo span { background: none; -webkit-text-fill-color: var(--muted); font-size: 12px; font-family: 'Space Mono', monospace; display: block; letter-spacing: 3px; margin-top: -4px; }
+  .user-pill { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 6px 12px 6px 6px; cursor: pointer; transition: all 0.2s; }
   .user-pill:hover { border-color: var(--neon-green); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #000; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
 
-  .avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #000;
-  }
-
-  .user-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  /* Connect screen */
-  #connect-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-    text-align: center;
-    gap: 20px;
-  }
-
-  .connect-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--neon-green)22, var(--neon-blue)22);
-    border: 1px solid var(--neon-green)44;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,135,0.2); }
-    50% { box-shadow: 0 0 0 20px rgba(0,255,135,0); }
-  }
-
-  .connect-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    letter-spacing: 2px;
-    line-height: 1;
-    background: linear-gradient(180deg, var(--text), var(--muted));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .connect-sub {
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 280px;
-    line-height: 1.6;
-  }
-
-  .btn-connect {
-    background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
-    color: #000;
-    border: none;
-    border-radius: 100px;
-    padding: 14px 32px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-connect::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .btn-connect:hover::before { opacity: 1; }
+  #connect-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; gap: 20px; }
+  .connect-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(0,255,135,0.13), rgba(0,194,255,0.13)); border: 1px solid rgba(0,255,135,0.27); display: flex; align-items: center; justify-content: center; font-size: 36px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,135,0.2); } 50% { box-shadow: 0 0 0 20px rgba(0,255,135,0); } }
+  .connect-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 2px; line-height: 1; background: linear-gradient(180deg, var(--text), var(--muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .connect-sub { color: var(--muted); font-size: 14px; max-width: 280px; line-height: 1.6; }
+  .btn-connect { background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); color: #000; border: none; border-radius: 100px; padding: 14px 32px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 280px; }
   .btn-connect:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,255,135,0.3); }
 
-  /* Stats bar */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
+  .stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: center; }
+  .stat-num { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--neon-green); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px;
-    text-align: center;
-  }
+  .chain-badge { display: flex; align-items: center; gap: 6px; background: rgba(0,194,255,0.08); border: 1px solid rgba(0,194,255,0.2); border-radius: 100px; padding: 6px 12px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--neon-blue); margin-bottom: 16px; }
+  .chain-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon-green); animation: blink 1.5s ease-in-out infinite; }
 
-  .stat-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--neon-green);
-  }
+  .tabs { display: flex; gap: 4px; background: var(--surface); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer; color: var(--muted); transition: all 0.2s; border: none; background: none; }
+  .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--surface);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
-  }
-
-  .tab {
-    flex: 1;
-    padding: 8px;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 7px;
-    cursor: pointer;
-    color: var(--muted);
-    transition: all 0.2s;
-    border: none;
-    background: none;
-  }
-
-  .tab.active {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  /* Bet cards */
-  .bet-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
-    transition: all 0.3s;
-    animation: slideIn 0.3s ease;
-    cursor: pointer;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .bet-card:hover {
-    border-color: rgba(0,255,135,0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-  }
-
+  .bet-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; transition: all 0.3s; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .bet-card:hover { border-color: rgba(0,255,135,0.2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
   .bet-card.live { border-color: rgba(0,255,135,0.3); }
   .bet-card.ended { opacity: 0.6; }
+  .bet-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+  .bet-category { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--neon-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+  .bet-question { font-size: 16px; font-weight: 600; line-height: 1.4; flex: 1; }
+  .bet-badge { padding: 4px 10px; border-radius: 100px; font-size: 10px; font-family: 'Space Mono', monospace; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .badge-live { background: rgba(0,255,135,0.15); color: var(--neon-green); border: 1px solid rgba(0,255,135,0.3); animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .badge-ended { background: rgba(85,85,112,0.2); color: var(--muted); border: 1px solid var(--border); }
+  .badge-onchain { background: rgba(0,194,255,0.1); color: var(--neon-blue); border: 1px solid rgba(0,194,255,0.3); font-size: 9px; padding: 2px 7px; border-radius: 100px; font-family: 'Space Mono', monospace; }
 
-  .bet-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    gap: 12px;
-  }
-
-  .bet-category {
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    color: var(--neon-blue);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-  }
-
-  .bet-question {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.4;
-    flex: 1;
-  }
-
-  .bet-badge {
-    padding: 4px 10px;
-    border-radius: 100px;
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .badge-live {
-    background: rgba(0,255,135,0.15);
-    color: var(--neon-green);
-    border: 1px solid rgba(0,255,135,0.3);
-    animation: blink 1.5s ease-in-out infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .badge-ended {
-    background: rgba(85,85,112,0.2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-
-  /* Vote buttons */
-  .vote-area {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .vote-btn {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 8px;
-    background: var(--surface2);
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-
-  .vote-btn:hover:not(:disabled) {
-    border-color: var(--neon-green);
-    background: rgba(0,255,135,0.05);
-  }
-
-  .vote-btn.voted-yes {
-    border-color: var(--neon-green);
-    background: rgba(0,255,135,0.1);
-  }
-
-  .vote-btn.voted-no {
-    border-color: var(--neon-pink);
-    background: rgba(255,0,110,0.1);
-  }
-
-  .vote-btn:disabled { cursor: default; }
-
-  .vote-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
+  .vote-area { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .vote-btn { border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; background: var(--surface2); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .vote-btn:hover:not(:disabled) { border-color: var(--neon-green); background: rgba(0,255,135,0.05); }
+  .vote-btn.voted-yes { border-color: var(--neon-green); background: rgba(0,255,135,0.1); }
+  .vote-btn.voted-no { border-color: var(--neon-pink); background: rgba(255,0,110,0.1); }
+  .vote-btn:disabled { cursor: default; opacity: 0.7; }
+  .vote-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .vote-btn.voted-yes .vote-label { color: var(--neon-green); }
   .vote-btn.voted-no .vote-label { color: var(--neon-pink); }
+  .vote-count { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
 
-  .vote-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  /* Progress bar */
-  .bet-progress {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
-    transition: width 0.5s ease;
-  }
-
-  /* Bet footer */
-  .bet-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .bet-creator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .mini-avatar {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--neon-pink), var(--neon-yellow));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    font-weight: 700;
-    color: #000;
-  }
-
-  .bet-timer {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
+  .bet-progress { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); transition: width 0.5s ease; }
+  .bet-footer { display: flex; align-items: center; justify-content: space-between; }
+  .bet-creator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .mini-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: #000; }
+  .bet-timer { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
   .bet-timer.urgent { color: var(--neon-yellow); }
+  .points-badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--neon-yellow); background: rgba(255,230,0,0.08); border: 1px solid rgba(255,230,0,0.2); padding: 3px 8px; border-radius: 100px; }
+  .winner-banner { background: linear-gradient(135deg, rgba(0,255,135,0.15), rgba(0,194,255,0.05)); border: 1px solid rgba(0,255,135,0.3); border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 13px; color: var(--neon-green); text-align: center; font-weight: 600; }
 
-  /* Points badge */
-  .points-badge {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-family: 'Space Mono', monospace;
-    color: var(--neon-yellow);
-    background: rgba(255,230,0,0.08);
-    border: 1px solid rgba(255,230,0,0.2);
-    padding: 3px 8px;
-    border-radius: 100px;
-  }
-
-  /* Winner banner */
-  .winner-banner {
-    background: linear-gradient(135deg, rgba(0,255,135,0.15), rgba(0,194,255,0.05));
-    border: 1px solid rgba(0,255,135,0.3);
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-top: 8px;
-    font-size: 13px;
-    color: var(--neon-green);
-    text-align: center;
-    font-weight: 600;
-  }
-
-  /* Create bet form */
-  #create-tab {
-    display: none;
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-  }
-
-  .form-label {
-    display: block;
-    font-size: 11px;
-    font-family: 'Space Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-
-  .form-input, .form-select, .form-textarea {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
+  #create-tab { display: none; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; transition: border-color 0.2s; outline: none; }
   .form-textarea { min-height: 80px; resize: none; }
-  .form-input:focus, .form-select:focus, .form-textarea:focus {
-    border-color: var(--neon-green);
-  }
-
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--neon-green); }
   .form-select option { background: var(--surface2); }
+  .duration-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .dur-btn { padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .dur-btn.selected { border-color: var(--neon-green); color: var(--neon-green); background: rgba(0,255,135,0.08); }
+  .btn-create { width: 100%; background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); color: #000; border: none; border-radius: 100px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+  .btn-create:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,255,135,0.3); }
+  .btn-create:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  .duration-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
+  .info-box { background: var(--surface); border: 1px solid rgba(0,194,255,0.2); border-radius: var(--radius); padding: 12px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+  .info-box span { color: var(--neon-blue); }
 
-  .dur-btn {
-    padding: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 12px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-  }
-
-  .dur-btn.selected {
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    background: rgba(0,255,135,0.08);
-  }
-
-  .btn-create {
-    width: 100%;
-    background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
-    color: #000;
-    border: none;
-    border-radius: 100px;
-    padding: 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-
-  .btn-create:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,255,135,0.3);
-  }
-
-  /* Leaderboard */
   #leaderboard-tab { display: none; }
-
-  .lb-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 8px;
-    animation: slideIn 0.3s ease;
-  }
-
-  .lb-rank {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: var(--muted);
-    width: 28px;
-    text-align: center;
-  }
-
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; animation: slideIn 0.3s ease; }
+  .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--muted); width: 28px; text-align: center; }
   .lb-rank.top { color: var(--neon-yellow); }
-
   .lb-info { flex: 1; }
   .lb-name { font-weight: 600; font-size: 14px; }
-  .lb-handle { font-size: 12px; color: var(--muted); }
+  .lb-accuracy { font-size: 11px; color: var(--muted); }
+  .lb-points { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--neon-green); text-align: right; }
 
-  .lb-points {
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    color: var(--neon-green);
-    text-align: right;
-  }
+  .wallet-btn { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,255,135,0.05)); border: 1px solid rgba(0,194,255,0.3); border-radius: 100px; padding: 6px 12px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--neon-blue); cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+  .wallet-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,194,255,0.2); }
+  .wallet-btn.connected { color: var(--neon-green); border-color: rgba(0,255,135,0.3); background: linear-gradient(135deg, rgba(0,255,135,0.1), rgba(0,194,255,0.05)); }
 
-  .lb-accuracy {
-    font-size: 11px;
-    color: var(--muted);
-  }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--neon-green); color: var(--neon-green); border-radius: 100px; padding: 10px 20px; font-size: 13px; font-weight: 600; z-index: 100; opacity: 0; transition: all 0.3s; white-space: nowrap; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--neon-pink); color: var(--neon-pink); }
 
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--surface2);
-    border: 1px solid var(--neon-green);
-    color: var(--neon-green);
-    border-radius: 100px;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 100;
-    opacity: 0;
-    transition: all 0.3s;
-    white-space: nowrap;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* Bottom nav */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: rgba(5,5,8,0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    padding: 12px 16px 20px;
-    display: flex;
-    justify-content: space-around;
-    z-index: 50;
-  }
-
-  .nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px 20px;
-    border-radius: 10px;
-    transition: all 0.2s;
-    color: var(--muted);
-    font-size: 10px;
-    font-family: 'DM Sans', sans-serif;
-  }
-
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: rgba(5,5,8,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 12px 16px 20px; display: flex; justify-content: space-around; z-index: 50; }
+  .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; padding: 6px 20px; border-radius: 10px; transition: all 0.2s; color: var(--muted); font-size: 10px; font-family: 'DM Sans', sans-serif; }
   .nav-btn.active { color: var(--neon-green); }
   .nav-btn .icon { font-size: 20px; }
-
   .hidden { display: none !important; }
 
-  /* Wallet button */
-  .wallet-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,255,135,0.05));
-    border: 1px solid rgba(0,194,255,0.3);
-    border-radius: 100px;
-    padding: 6px 12px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--neon-blue);
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-  .wallet-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,194,255,0.2); }
-  .wallet-btn.connected { 
-    color: var(--neon-green); 
-    border-color: rgba(0,255,135,0.3);
-    background: linear-gradient(135deg, rgba(0,255,135,0.1), rgba(0,194,255,0.05));
-  }
-  .wallet-address {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--neon-green);
-    margin-top: 12px;
-    word-break: break-all;
-    display: none;
-  }
+  .loading-spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,255,135,0.3); border-top-color: var(--neon-green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
+  .tx-link { font-size: 11px; color: var(--neon-blue); font-family: 'Space Mono', monospace; cursor: pointer; text-decoration: underline; margin-top: 6px; display: block; }
 </style>
 </head>
 <body>
@@ -706,9 +145,9 @@
 <div id="connect-screen" class="container">
   <div class="connect-icon">🎲</div>
   <div class="connect-title">BET BUDDIES</div>
-  <p class="connect-sub">Arkadaşlarınla on-chain bahisler kur. Farcaster hesabınla giriş yap, tahmin et, kazan.</p>
-  <button class="btn-connect" onclick="connectFarcaster()">
-    🟣 Farcaster ile Bağlan
+  <p class="connect-sub">Arkadaşlarınla on-chain bahisler kur. Base chain'de oyla, kazan.</p>
+  <button class="btn-connect" onclick="connectWallet()">
+    💎 Cüzdan ile Bağlan
   </button>
   <p style="font-size:12px;color:var(--muted);">Gerçek para yok · Sadece şöhret 🏆</p>
 </div>
@@ -718,61 +157,48 @@
     <header>
       <div class="logo">
         Bet Buddies
-        <span>ON-CHAIN SOCIAL</span>
+        <span>ON-CHAIN · BASE</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-        <div class="user-pill" id="user-pill" onclick="toggleWalletPanel()">
+        <div class="user-pill" id="user-pill">
           <div class="avatar" id="header-avatar">?</div>
           <span class="user-name" id="header-name">...</span>
         </div>
-        <button class="wallet-btn" id="wallet-btn" onclick="connectWallet()">
-          💎 Cüzdan Bağla
+        <button class="wallet-btn connected" id="wallet-btn">
+          ✅ <span id="wallet-short">...</span>
         </button>
       </div>
     </header>
 
-    <!-- Wallet Panel -->
-    <div id="wallet-panel" style="display:none;margin-bottom:16px;">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;">
-        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;">Cüzdan</div>
-        <div id="wallet-address" class="wallet-address"></div>
-        <div id="wallet-status" style="font-size:13px;color:var(--muted);margin-top:8px;">Cüzdan bağlı değil</div>
-        <button class="wallet-btn" id="wallet-panel-btn" onclick="connectWallet()" style="margin-top:12px;width:100%;justify-content:center;">
-          💎 Coinbase Wallet ile Bağlan
-        </button>
-      </div>
+    <div class="chain-badge">
+      <div class="chain-dot"></div>
+      Base Mainnet · <span id="contract-short">0xEbd0...Af06</span>
     </div>
 
-    <!-- Stats -->
     <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-points">0</div>
-        <div class="stat-label">Puan</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-wins">0</div>
-        <div class="stat-label">Kazanılan</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-accuracy">-%</div>
-        <div class="stat-label">Doğruluk</div>
-      </div>
+      <div class="stat-card"><div class="stat-num" id="stat-bets">0</div><div class="stat-label">Bahis</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-votes">0</div><div class="stat-label">Oyum</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-created">0</div><div class="stat-label">Kurdum</div></div>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" onclick="showTab('bets', this)">🔥 Aktif</button>
       <button class="tab" onclick="showTab('create', this)">➕ Oluştur</button>
       <button class="tab" onclick="showTab('leaderboard', this)">🏆 Lider</button>
     </div>
 
-    <!-- Bets Tab -->
     <div id="bets-tab">
+      <div id="loading-bets" style="text-align:center;padding:40px;color:var(--muted);">
+        <div class="loading-spin" style="width:24px;height:24px;margin:0 auto 12px;"></div>
+        <div>Bahisler yükleniyor...</div>
+      </div>
       <div id="bets-list"></div>
     </div>
 
-    <!-- Create Tab -->
     <div id="create-tab">
+      <div class="info-box">
+        ⛓️ Bahis <span>Base chain</span>'e yazılacak. Rabby Wallet'tan onay gerekir. Gas ücreti: ~$0.01
+      </div>
       <div class="form-group">
         <label class="form-label">Kategori</label>
         <select class="form-select" id="bet-category">
@@ -789,416 +215,359 @@
       <div class="form-group">
         <label class="form-label">Süre</label>
         <div class="duration-grid">
-          <div class="dur-btn" onclick="selectDur(this,'1s')">1 saat</div>
-          <div class="dur-btn selected" onclick="selectDur(this,'24s')">24 saat</div>
-          <div class="dur-btn" onclick="selectDur(this,'3g')">3 gün</div>
-          <div class="dur-btn" onclick="selectDur(this,'7g')">7 gün</div>
+          <div class="dur-btn" onclick="selectDur(this, 3600)">1 saat</div>
+          <div class="dur-btn selected" onclick="selectDur(this, 86400)">24 saat</div>
+          <div class="dur-btn" onclick="selectDur(this, 259200)">3 gün</div>
+          <div class="dur-btn" onclick="selectDur(this, 604800)">7 gün</div>
         </div>
       </div>
-      <button class="btn-create" onclick="createBet()">🚀 Bahis Oluştur</button>
+      <button class="btn-create" id="create-btn" onclick="createBetOnChain()">🚀 Chain'e Bahis Oluştur</button>
     </div>
 
-    <!-- Leaderboard Tab -->
     <div id="leaderboard-tab">
+      <div class="info-box">
+        🏆 En çok bahis açan cüzdanlar. Veriler chain'den geliyor.
+      </div>
       <div id="lb-list"></div>
     </div>
   </div>
 
-  <!-- Bottom Nav -->
   <div class="bottom-nav">
-    <button class="nav-btn active" onclick="showTab('bets', null, this)">
-      <span class="icon">🔥</span>Bahisler
-    </button>
-    <button class="nav-btn" onclick="showTab('create', null, this)">
-      <span class="icon">➕</span>Oluştur
-    </button>
-    <button class="nav-btn" onclick="showTab('leaderboard', null, this)">
-      <span class="icon">🏆</span>Liderler
-    </button>
+    <button class="nav-btn active" onclick="showTab('bets', null, this)"><span class="icon">🔥</span>Bahisler</button>
+    <button class="nav-btn" onclick="showTab('create', null, this)"><span class="icon">➕</span>Oluştur</button>
+    <button class="nav-btn" onclick="showTab('leaderboard', null, this)"><span class="icon">🏆</span>Liderler</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// --- State ---
-let currentUser = null;
-let selectedDuration = '24s';
-let bets = [];
-let activeTabName = 'bets';
-let activeTopTab = null;
-let activeNavBtn = null;
-
-const farcasterUsers = [
-  { name: 'Alex', handle: 'alex.eth', avatar: 'A', color: '#00c2ff,#ff006e', points: 0, wins: 0, total: 0 },
-  { name: 'Zeynep', handle: 'zeynep.base', avatar: 'Z', color: '#00ff87,#00c2ff', points: 0, wins: 0, total: 0 },
-  { name: 'Mert', handle: 'mert.farcaster', avatar: 'M', color: '#ffe600,#ff006e', points: 0, wins: 0, total: 0 },
+// ============ CONTRACT CONFIG ============
+const CONTRACT_ADDRESS = '0xEbd08BE267D25c171F02b06bc82EC15Cd737Af06';
+const CONTRACT_ABI = [
+  "function createBet(string memory _question, uint256 _duration) external",
+  "function vote(uint256 _betId, bool _vote) external",
+  "function resolveBet(uint256 _betId, bool _result) external",
+  "function getBet(uint256 _betId) external view returns (tuple(uint256 id, string question, address creator, uint256 yesVotes, uint256 noVotes, bool resolved, bool result, uint256 endsAt))",
+  "function betCount() external view returns (uint256)",
+  "function hasVoted(uint256 betId, address voter) external view returns (bool)",
+  "event BetCreated(uint256 id, string question, address creator)",
+  "event Voted(uint256 betId, address voter, bool vote)"
 ];
+const BASE_CHAIN_ID = 8453;
+const BASESCAN = 'https://basescan.org';
 
-const sampleBets = [
-  {
-    id: 1, question: 'BTC bu hafta 100k doları kırar mı?', category: 'kripto',
-    creator: 'vitalik.eth', creatorAvatar: 'V', creatorColor: '#ff006e,#ffe600',
-    yes: 142, no: 87, status: 'live', endsIn: 18, myVote: null, result: null
-  },
-  {
-    id: 2, question: 'Fenerbahçe bu hafta sonu kazanır mı?', category: 'spor',
-    creator: 'kaan.eth', creatorAvatar: 'K', creatorColor: '#00ff87,#ffe600',
-    yes: 203, no: 61, status: 'live', endsIn: 42, myVote: null, result: null
-  },
-  {
-    id: 3, question: 'Base ağı bu ay 10M işleme ulaşır mı?', category: 'kripto',
-    creator: 'coinbase.eth', creatorAvatar: 'C', creatorColor: '#00c2ff,#00ff87',
-    yes: 89, no: 112, status: 'ended', endsIn: 0, myVote: 'yes', result: 'yes'
-  },
-  {
-    id: 4, question: 'Apple bu yıl AR gözlük çıkarır mı?', category: 'teknoloji',
-    creator: 'techbro.eth', creatorAvatar: 'T', creatorColor: '#ffe600,#00c2ff',
-    yes: 57, no: 134, status: 'ended', endsIn: 0, myVote: 'no', result: 'no'
-  }
-];
+// ============ STATE ============
+let provider = null;
+let signer = null;
+let contract = null;
+let userAddress = null;
+let selectedDuration = 86400;
+let myVotes = {};
+let myCreated = 0;
 
-const leaderboardData = [
-  { name: 'vitalik.eth', avatar: 'V', color: '#ff006e,#ffe600', points: 1240, wins: 18, total: 22 },
-  { name: 'kaan.eth', avatar: 'K', color: '#00ff87,#ffe600', points: 980, wins: 14, total: 19 },
-  { name: 'coinbase.eth', avatar: 'C', color: '#00c2ff,#00ff87', points: 750, wins: 11, total: 15 },
-  { name: 'degen.base', avatar: 'D', color: '#ff006e,#00c2ff', points: 620, wins: 9, total: 14 },
-  { name: 'basegirl.eth', avatar: 'B', color: '#ffe600,#ff006e', points: 540, wins: 8, total: 13 },
-];
-
-
-// --- Coinbase Wallet ---
-let walletAddress = null;
-
-function toggleWalletPanel() {
-  const panel = document.getElementById('wallet-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
-
+// ============ WALLET CONNECT ============
 async function connectWallet() {
-  // Try Farcaster SDK wallet first (Base app / Warpcast)
   try {
+    // Try Farcaster SDK wallet first
     if (window.sdk && window.sdk.wallet) {
-      const result = await window.sdk.wallet.ethProvider.request({
-        method: 'eth_requestAccounts'
-      });
-      if (result && result[0]) {
-        setWalletConnected(result[0]);
+      try {
+        await window.sdk.actions.ready();
+        provider = new ethers.providers.Web3Provider(window.sdk.wallet.ethProvider);
+        await provider.send('eth_requestAccounts', []);
+        const network = await provider.getNetwork();
+        if (network.chainId !== BASE_CHAIN_ID) {
+          await switchToBase();
+        }
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+        showApp();
         return;
-      }
+      } catch(e) { console.log('SDK wallet failed:', e); }
     }
-  } catch(e) {
-    console.log('SDK wallet failed, trying window.ethereum:', e);
-  }
 
-  // Try window.ethereum (Coinbase Wallet browser extension / mobile)
-  try {
+    // Try window.ethereum (Rabby, MetaMask, Coinbase)
     if (window.ethereum) {
-      const isCoinbase = window.ethereum.isCoinbaseWallet || 
-                         (window.ethereum.providers && window.ethereum.providers.find(p => p.isCoinbaseWallet));
-      
-      const provider = isCoinbase ? window.ethereum : 
-        (window.ethereum.providers ? window.ethereum.providers.find(p => p.isCoinbaseWallet) || window.ethereum : window.ethereum);
-      
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      if (accounts && accounts[0]) {
-        setWalletConnected(accounts[0]);
-        return;
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      const network = await provider.getNetwork();
+      if (network.chainId !== BASE_CHAIN_ID) {
+        await switchToBase();
+        provider = new ethers.providers.Web3Provider(window.ethereum);
       }
+      signer = provider.getSigner();
+      userAddress = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      showApp();
+    } else {
+      showToast('❗ Cüzdan bulunamadı!', true);
     }
   } catch(e) {
-    console.log('window.ethereum failed:', e);
+    console.error(e);
+    showToast('❗ Bağlantı hatası: ' + e.message, true);
   }
-
-  // No wallet found
-  showToast('❗ Coinbase Wallet bulunamadı. Yükleyin!');
-  setTimeout(() => {
-    window.open('https://www.coinbase.com/wallet/downloads', '_blank');
-  }, 1500);
 }
 
-function setWalletConnected(address) {
-  walletAddress = address;
-  const short = address.slice(0,6) + '...' + address.slice(-4);
-  
-  // Update wallet button
-  const btn = document.getElementById('wallet-btn');
-  btn.textContent = '✅ ' + short;
-  btn.classList.add('connected');
-  
-  // Update panel
-  const addrDiv = document.getElementById('wallet-address');
-  addrDiv.textContent = address;
-  addrDiv.style.display = 'block';
-  document.getElementById('wallet-status').textContent = '✅ Cüzdan bağlandı';
-  document.getElementById('wallet-panel-btn').textContent = '✅ ' + short;
-  document.getElementById('wallet-panel-btn').classList.add('connected');
-  
-  showToast('💎 Cüzdan bağlandı: ' + short);
-}
-
-// --- Farcaster SDK Auto Login ---
-async function initFarcasterSDK() {
+async function switchToBase() {
   try {
-    if (window.sdk) {
-      await window.sdk.actions.ready();
-      const context = await window.sdk.context;
-      if (context && context.user) {
-        const fc = context.user;
-        const username = fc.username || fc.displayName || 'anon';
-        const displayName = fc.displayName || username;
-        currentUser = {
-          name: displayName,
-          handle: username,
-          avatar: displayName[0].toUpperCase(),
-          color: '#00ff87,#00c2ff',
-          fid: fc.fid || '?',
-          pfp: fc.pfpUrl || null,
-          points: 0, wins: 0, total: 0
-        };
-        showApp(fc.pfpUrl || null);
-        showToast(`🟣 Hoş geldin, @${username}!`);
-        return;
-      }
-    }
-  } catch (e) {
-    console.log('SDK fallback:', e);
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x2105' }]
+    });
+  } catch(e) {
+    // Add Base network if not found
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: '0x2105',
+        chainName: 'Base',
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://mainnet.base.org'],
+        blockExplorerUrls: ['https://basescan.org']
+      }]
+    });
   }
-  // Fallback: show manual connect button
-  document.getElementById('connect-screen').classList.remove('hidden');
 }
 
-function connectFarcaster() {
-  const user = farcasterUsers[Math.floor(Math.random() * farcasterUsers.length)];
-  currentUser = { ...user };
-  showApp(null);
-  showToast('🟣 Farcaster ile bağlandın!');
-}
-
-function showApp(pfpUrl) {
+function showApp() {
   document.getElementById('connect-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  const avatar = document.getElementById('header-avatar');
-  if (pfpUrl) {
-    avatar.style.backgroundImage = `url(${pfpUrl})`;
-    avatar.style.backgroundSize = 'cover';
-    avatar.style.backgroundPosition = 'center';
-    avatar.textContent = '';
-  } else {
-    avatar.textContent = currentUser.avatar;
-    avatar.style.background = `linear-gradient(135deg, ${currentUser.color})`;
-  }
-  document.getElementById('header-name').textContent = '@' + currentUser.handle;
-  leaderboardData.push({
-    name: currentUser.handle, avatar: currentUser.avatar,
-    color: currentUser.color, points: 0, wins: 0, total: 0
-  });
-  leaderboardData.sort((a,b) => b.points - a.points);
-  bets = [...sampleBets];
-  updateStats();
-  renderBets();
-  renderLeaderboard();
+  const short = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+  document.getElementById('header-avatar').textContent = userAddress.slice(2,4).toUpperCase();
+  document.getElementById('header-avatar').style.background = `linear-gradient(135deg, #00ff87, #00c2ff)`;
+  document.getElementById('header-name').textContent = short;
+  document.getElementById('wallet-short').textContent = short;
+  showToast('✅ Base\'e bağlandı!');
+  loadBets();
 }
 
-function updateStats() {
-  const userEntry = leaderboardData.find(l => l.name === currentUser.handle);
-  const pts = userEntry ? userEntry.points : 0;
-  const wins = userEntry ? userEntry.wins : 0;
-  const total = userEntry ? userEntry.total : 0;
-  
-  document.getElementById('stat-points').textContent = pts;
-  document.getElementById('stat-wins').textContent = wins;
-  document.getElementById('stat-accuracy').textContent = total > 0 ? Math.round(wins/total*100) + '%' : '-%';
-}
+// ============ LOAD BETS FROM CHAIN ============
+async function loadBets() {
+  try {
+    const count = await contract.betCount();
+    const total = count.toNumber();
+    document.getElementById('stat-bets').textContent = total;
 
-// --- Tabs ---
-function showTab(name, topBtn, navBtn) {
-  activeTabName = name;
-  
-  document.getElementById('bets-tab').style.display = 'none';
-  document.getElementById('create-tab').style.display = 'none';
-  document.getElementById('leaderboard-tab').style.display = 'none';
-  document.getElementById(name + '-tab').style.display = 'block';
+    if (total === 0) {
+      document.getElementById('loading-bets').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Henüz bahis yok. İlk bahsi sen aç! 🎲</div>';
+      return;
+    }
 
-  // Top tabs
-  if (topBtn) {
-    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-    topBtn.classList.add('active');
-  }
+    document.getElementById('loading-bets').style.display = 'none';
 
-  // Bottom nav
-  if (navBtn) {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    navBtn.classList.add('active');
+    const bets = [];
+    let myVoteCount = 0;
+    myCreated = 0;
+
+    for (let i = total; i >= 1; i--) {
+      const bet = await contract.getBet(i);
+      const voted = await contract.hasVoted(i, userAddress);
+      if (voted) { myVotes[i] = true; myVoteCount++; }
+      if (bet.creator.toLowerCase() === userAddress.toLowerCase()) myCreated++;
+      bets.push({ id: i, bet, voted });
+    }
+
+    document.getElementById('stat-votes').textContent = myVoteCount;
+    document.getElementById('stat-created').textContent = myCreated;
+
+    renderBets(bets);
+    renderLeaderboard(bets);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading-bets').innerHTML = '<div style="text-align:center;padding:40px;color:var(--neon-pink);">❗ Yükleme hatası. Sayfayı yenile.</div>';
   }
 }
 
-// --- Render bets ---
-function renderBets() {
+function renderBets(bets) {
   const container = document.getElementById('bets-list');
-  const active = bets.filter(b => b.status === 'live');
-  const ended = bets.filter(b => b.status === 'ended');
-  const all = [...active, ...ended];
-  
-  container.innerHTML = all.map(bet => {
-    const total = bet.yes + bet.no;
-    const yesPct = total > 0 ? Math.round(bet.yes / total * 100) : 50;
-    const voted = bet.myVote;
-    const isEnded = bet.status === 'ended';
-    const wonBet = isEnded && voted && bet.result === voted;
-    const lostBet = isEnded && voted && bet.result !== voted;
-    
-    const categoryEmoji = {
-      kripto: '🪙', spor: '⚽', teknoloji: '💻', genel: '🌍'
-    }[bet.category] || '🎲';
+  const now = Math.floor(Date.now() / 1000);
 
-    const timerText = isEnded ? 'Sona erdi' :
-      bet.endsIn < 6 ? `⚡ ${bet.endsIn}s kaldı` : `${bet.endsIn}s kaldı`;
-    const timerClass = !isEnded && bet.endsIn < 6 ? 'bet-timer urgent' : 'bet-timer';
+  container.innerHTML = bets.map(({ id, bet, voted }) => {
+    const yesVotes = bet.yesVotes.toNumber();
+    const noVotes = bet.noVotes.toNumber();
+    const total = yesVotes + noVotes;
+    const yesPct = total > 0 ? Math.round(yesVotes / total * 100) : 50;
+    const endsAt = bet.endsAt.toNumber();
+    const isEnded = bet.resolved || now > endsAt;
+    const isCreator = bet.creator.toLowerCase() === userAddress.toLowerCase();
+    const shortCreator = bet.creator.slice(0,6) + '...' + bet.creator.slice(-4);
+    const timeLeft = endsAt - now;
+    const timerText = isEnded ? 'Sona erdi' : timeLeft < 3600 ? `⚡ ${Math.floor(timeLeft/60)}dk` : `${Math.floor(timeLeft/3600)}s kaldı`;
 
-    const winnerBanner = wonBet ? `<div class="winner-banner">🎉 Doğru tahmin! +50 puan kazandın</div>` :
-      lostBet ? `<div class="winner-banner" style="border-color:rgba(255,0,110,0.3);background:rgba(255,0,110,0.05);color:var(--neon-pink);">😬 Yanlış tahmin. Bir dahaki sefere!</div>` : '';
+    const resolveBtn = isCreator && !bet.resolved && now > endsAt ?
+      `<div style="display:flex;gap:6px;margin-top:8px;">
+        <button onclick="resolveBet(${id}, true)" style="flex:1;padding:8px;background:rgba(0,255,135,0.1);border:1px solid rgba(0,255,135,0.3);border-radius:8px;color:var(--neon-green);cursor:pointer;font-size:12px;">✅ Evet Kazandı</button>
+        <button onclick="resolveBet(${id}, false)" style="flex:1;padding:8px;background:rgba(255,0,110,0.1);border:1px solid rgba(255,0,110,0.3);border-radius:8px;color:var(--neon-pink);cursor:pointer;font-size:12px;">❌ Hayır Kazandı</button>
+      </div>` : '';
 
-    return `
-    <div class="bet-card ${bet.status}">
+    const resultBanner = bet.resolved ?
+      `<div class="winner-banner" style="${bet.result ? '' : 'border-color:rgba(255,0,110,0.3);background:rgba(255,0,110,0.05);color:var(--neon-pink);'}">
+        ${bet.result ? '✅ EVET KAZANDI' : '❌ HAYIR KAZANDI'}
+      </div>` : '';
+
+    return `<div class="bet-card ${isEnded ? 'ended' : 'live'}">
       <div class="bet-top">
         <div style="flex:1">
-          <div class="bet-category">${categoryEmoji} ${bet.category.toUpperCase()}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="bet-category">⛓️ ON-CHAIN #${id}</div>
+            <div class="badge-onchain">BASE</div>
+          </div>
           <div class="bet-question">${bet.question}</div>
         </div>
-        <div class="bet-badge ${isEnded ? 'badge-ended' : 'badge-live'}">
-          ${isEnded ? 'BİTTİ' : '● CANLI'}
-        </div>
+        <div class="bet-badge ${isEnded ? 'badge-ended' : 'badge-live'}">${isEnded ? 'BİTTİ' : '● CANLI'}</div>
       </div>
 
       <div class="vote-area">
-        <div class="vote-btn ${voted==='yes'?'voted-yes':''}" 
-             onclick="vote(${bet.id},'yes')" 
-             ${voted||isEnded?'disabled':''}>
+        <div class="vote-btn ${voted ? 'voted-yes' : ''}" onclick="voteOnChain(${id}, true)" ${voted || isEnded ? 'disabled' : ''}>
           <div class="vote-label">✅ Evet</div>
-          <div class="vote-count">${bet.yes} oy · ${yesPct}%</div>
+          <div class="vote-count">${yesVotes} oy · ${yesPct}%</div>
         </div>
-        <div class="vote-btn ${voted==='no'?'voted-no':''}" 
-             onclick="vote(${bet.id},'no')"
-             ${voted||isEnded?'disabled':''}>
+        <div class="vote-btn ${voted ? '' : ''}" onclick="voteOnChain(${id}, false)" ${voted || isEnded ? 'disabled' : ''}>
           <div class="vote-label">❌ Hayır</div>
-          <div class="vote-count">${bet.no} oy · ${100-yesPct}%</div>
+          <div class="vote-count">${noVotes} oy · ${100-yesPct}%</div>
         </div>
       </div>
 
-      <div class="bet-progress">
-        <div class="progress-fill" style="width:${yesPct}%"></div>
-      </div>
+      <div class="bet-progress"><div class="progress-fill" style="width:${yesPct}%"></div></div>
 
       <div class="bet-footer">
         <div class="bet-creator">
-          <div class="mini-avatar" style="background:linear-gradient(135deg,${bet.creatorColor})">${bet.creatorAvatar}</div>
-          @${bet.creator}
+          <div class="mini-avatar" style="background:linear-gradient(135deg,#ff006e,#ffe600)">${bet.creator.slice(2,4).toUpperCase()}</div>
+          ${shortCreator}
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          ${voted ? `<div class="points-badge">⭐ +50</div>` : ''}
-          <div class="${timerClass}">${timerText}</div>
+          ${voted ? '<div class="points-badge">⛓️ Oylandı</div>' : ''}
+          <div class="bet-timer ${!isEnded && timeLeft < 3600 ? 'urgent' : ''}">${timerText}</div>
         </div>
       </div>
-      ${winnerBanner}
+      ${resolveBtn}
+      ${resultBanner}
+      <a class="tx-link" href="${BASESCAN}/address/${CONTRACT_ADDRESS}" target="_blank">BaseScan'de Gör ↗</a>
     </div>`;
   }).join('');
 }
 
-// --- Vote ---
-function vote(betId, side) {
-  const bet = bets.find(b => b.id === betId);
-  if (!bet || bet.myVote || bet.status === 'ended') return;
-  
-  bet.myVote = side;
-  if (side === 'yes') bet.yes++;
-  else bet.no++;
-  
-  // Update user stats
-  const userEntry = leaderboardData.find(l => l.name === currentUser.handle);
-  if (userEntry) userEntry.total++;
-  
-  renderBets();
-  updateStats();
-  showToast(side === 'yes' ? '✅ Evet oyu verildi!' : '❌ Hayır oyu verildi!');
+// ============ VOTE ON CHAIN ============
+async function voteOnChain(betId, voteValue) {
+  try {
+    showToast('⏳ İşlem onaylanıyor...');
+    const tx = await contract.vote(betId, voteValue);
+    showToast('⛓️ Chain\'e gönderildi...');
+    await tx.wait();
+    showToast('✅ Oyun kaydedildi!');
+    myVotes[betId] = voteValue;
+    loadBets();
+  } catch(e) {
+    if (e.code === 4001) showToast('❌ İptal edildi', true);
+    else showToast('❗ Hata: ' + (e.reason || e.message), true);
+  }
 }
 
-// --- Create bet ---
+// ============ CREATE BET ON CHAIN ============
+async function createBetOnChain() {
+  const q = document.getElementById('bet-question').value.trim();
+  if (!q || q.length < 10) { showToast('❗ Soru çok kısa!', true); return; }
+
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-spin" style="margin:0 auto"></div>';
+
+  try {
+    showToast('⏳ Wallet onayı bekleniyor...');
+    const tx = await contract.createBet(q, selectedDuration);
+    showToast('⛓️ Base\'e gönderildi...');
+    await tx.wait();
+    showToast('🚀 Bahis chain\'e yazıldı!');
+    document.getElementById('bet-question').value = '';
+    showTab('bets', document.querySelectorAll('.tabs .tab')[0], null);
+    document.querySelectorAll('.tabs .tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    loadBets();
+  } catch(e) {
+    if (e.code === 4001) showToast('❌ İptal edildi', true);
+    else showToast('❗ Hata: ' + (e.reason || e.message), true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Chain\'e Bahis Oluştur';
+  }
+}
+
+// ============ RESOLVE BET ============
+async function resolveBet(betId, result) {
+  try {
+    showToast('⏳ Sonuç bildiriliyor...');
+    const tx = await contract.resolveBet(betId, result);
+    await tx.wait();
+    showToast('✅ Bahis sonuçlandı!');
+    loadBets();
+  } catch(e) {
+    if (e.code === 4001) showToast('❌ İptal edildi', true);
+    else showToast('❗ ' + (e.reason || e.message), true);
+  }
+}
+
+// ============ LEADERBOARD ============
+function renderLeaderboard(bets) {
+  const creators = {};
+  bets.forEach(({ bet }) => {
+    const addr = bet.creator.toLowerCase();
+    if (!creators[addr]) creators[addr] = { address: bet.creator, count: 0 };
+    creators[addr].count++;
+  });
+  const sorted = Object.values(creators).sort((a,b) => b.count - a.count);
+  const container = document.getElementById('lb-list');
+  container.innerHTML = sorted.map((u, i) => {
+    const isMe = u.address.toLowerCase() === userAddress.toLowerCase();
+    const short = u.address.slice(0,6) + '...' + u.address.slice(-4);
+    return `<div class="lb-row" style="${isMe ? 'border-color:rgba(0,255,135,0.4);' : ''}">
+      <div class="lb-rank ${i < 3 ? 'top' : ''}">${i+1}</div>
+      <div class="mini-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#00ff87,#00c2ff)">${u.address.slice(2,4).toUpperCase()}</div>
+      <div class="lb-info">
+        <div class="lb-name">${isMe ? '⭐ ' : ''}${short}</div>
+        <div class="lb-accuracy">${u.count} bahis açtı</div>
+      </div>
+      <div class="lb-points">${u.count}<div style="font-size:10px;color:var(--muted)">bahis</div></div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:20px;color:var(--muted);">Henüz bahis yok</div>';
+}
+
+// ============ UI HELPERS ============
+function showTab(name, topBtn, navBtn) {
+  ['bets','create','leaderboard'].forEach(t => document.getElementById(t+'-tab').style.display = 'none');
+  document.getElementById(name+'-tab').style.display = 'block';
+  if (topBtn) { document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active')); topBtn.classList.add('active'); }
+  if (navBtn) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); navBtn.classList.add('active'); }
+}
+
 function selectDur(el, val) {
   document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   selectedDuration = val;
 }
 
-function createBet() {
-  const q = document.getElementById('bet-question').value.trim();
-  const cat = document.getElementById('bet-category').value;
-  
-  if (!q) { showToast('❗ Soru yaz!'); return; }
-  if (q.length < 10) { showToast('❗ Soru çok kısa!'); return; }
-  
-  const durMap = { '1s': 1, '24s': 24, '3g': 72, '7g': 168 };
-  
-  bets.unshift({
-    id: Date.now(),
-    question: q,
-    category: cat,
-    creator: currentUser.handle,
-    creatorAvatar: currentUser.avatar,
-    creatorColor: currentUser.color,
-    yes: 1,
-    no: 0,
-    status: 'live',
-    endsIn: durMap[selectedDuration],
-    myVote: 'yes',
-    result: null
-  });
-  
-  document.getElementById('bet-question').value = '';
-  showToast('🚀 Bahis oluşturuldu!');
-  showTab('bets', document.querySelector('.tab'), null);
-  document.querySelectorAll('.tabs .tab')[0].classList.add('active');
-  document.querySelectorAll('.tabs .tab')[1].classList.remove('active');
-  renderBets();
-}
-
-// --- Leaderboard ---
-function renderLeaderboard() {
-  const container = document.getElementById('lb-list');
-  const sorted = [...leaderboardData].sort((a,b) => b.points - a.points);
-  
-  container.innerHTML = sorted.map((user, i) => {
-    const rank = i + 1;
-    const accuracy = user.total > 0 ? Math.round(user.wins/user.total*100) + '%' : '-';
-    const isMe = user.name === currentUser.handle;
-    return `
-    <div class="lb-row" style="${isMe ? 'border-color:rgba(0,255,135,0.4);' : ''}">
-      <div class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank}</div>
-      <div class="mini-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,${user.color})">${user.avatar}</div>
-      <div class="lb-info">
-        <div class="lb-name">${isMe ? '⭐ ' : ''}@${user.name}</div>
-        <div class="lb-accuracy">${user.wins}/${user.total} doğru · ${accuracy}</div>
-      </div>
-      <div class="lb-points">
-        ${user.points.toLocaleString()}
-        <div style="font-size:10px;color:var(--muted)">puan</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// --- Toast ---
-function showToast(msg) {
+function showToast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Init
+// ============ INIT ============
 document.getElementById('bets-tab').style.display = 'block';
-document.getElementById('connect-screen').classList.add('hidden');
-window.addEventListener('load', initFarcasterSDK);
+
+window.addEventListener('load', async () => {
+  // Try Farcaster SDK auto-connect
+  try {
+    if (window.sdk) {
+      await window.sdk.actions.ready();
+      const context = await window.sdk.context;
+      if (context && context.user) {
+        await connectWallet();
+      }
+    }
+  } catch(e) { console.log('SDK init:', e); }
+});
 </script>
 </body>
 </html>
